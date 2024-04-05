@@ -62,7 +62,7 @@ $OreCliDirectory = "C:\\Path\\To\\OreCli"    # Change this to your Ore CLI direc
 $KeyPairFile = "keypair.json"                # Your keypair file
 $PriorityFee = 500000                        # Set your priority fee - <MICROLAMPORTS>
 $RpcUrl = "https://your-rpc-url.com"         # Your custom RPC URL
-$NumInstances = 10                           # Number of instances you want to run
+$NumInstances = 5                           # Number of instances you want to run (CHECK LOAD IN TASK MANAGER BEFORE INCREASING TO MUCH)
 
 $ScriptBlock = {
     param($OreCliDirectory, $KeyPairFile, $PriorityFee, $RpcUrl)
