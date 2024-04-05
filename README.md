@@ -64,9 +64,9 @@ $OreCliDirectory = "C:\\Path\\To\\OreCli"    # Change this to where you donwload
 $KeyPairFile = "keypair.json"                # Your keypair file
 $PriorityFee = 500000                        # Set your priority fee - <MICROLAMPORTS>
 $RpcUrl = "https://your-rpc-url.com"         # Your custom RPC URL
-$NumInstances = 5                           # Number of instances you want to run (CHECK LOAD IN TASK MANAGER BEFORE INCREASING TO MUCH)
+$NumInstances = 5                            # Number of instances you want to run (CHECK LOAD IN TASK MANAGER BEFORE INCREASING TO MUCH)
 
-$global:sequenceNumber = 0
+$global:jobCounter = 0
 $ScriptBlock = {
     param($OreCliDirectory, $KeyPairFile, $PriorityFee, $RpcUrl)
     cd $OreCliDirectory
@@ -83,12 +83,13 @@ $ScriptBlock = {
 function Start-OreCliProcesses {
     param($numInstances)
     for ($i = 0; $i -lt $numInstances; $i++) {
-        $global:sequenceNumber += 1
-        $job = Start-Job -ScriptBlock $ScriptBlock -ArgumentList $OreCliDirectory, $KeyPairFile, $PriorityFee, $RpcUrl
-        Write-Host ("Starting job " + $global:sequenceNumber) -ForegroundColor Green
+        $global:jobCounter += 1
+        Start-Job -ScriptBlock $ScriptBlock -ArgumentList $OreCliDirectory, $KeyPairFile, $PriorityFee, $RpcUrl
+        Write-Host ("Starting job " + $global:jobCounter) -ForegroundColor Green
     }
 }
 
+# Main Loop
 while ($true) {
     $runningJobs = Get-Job | Where-Object { $_.State -eq 'Running' }
     $instancesToStart = $NumInstances - $runningJobs.Count
@@ -103,6 +104,7 @@ while ($true) {
         if ($jobResult -match "Job Succeeded.") {
             Write-Host ("Job " + [regex]::Match($job.Command, "\d+").Value + " succeeded.") -ForegroundColor Green
         } elseif ($jobResult -match "Job Failed.") {
+            # Extract only the first line of the error message for display
             $errorLine = $jobResult -replace "Job Failed. Error: ", ""
             Write-Host ("Job " + [regex]::Match($job.Command, "\d+").Value + " failed with error: $errorLine") -ForegroundColor Red
         }
