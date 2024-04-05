@@ -20,6 +20,7 @@ cargo build --release
 ```
 
 ## Using the Ore CLI
+Get it here -> [HardhatChad/ore-cli](https://github.com/HardhatChad/ore-cli)
 
 Run the following command in Command Prompt, VS Terminal or PowerShell to start mining:
 
