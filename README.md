@@ -60,60 +60,29 @@ Live <MICROLAMPORTS> tracker i use to adjust priority-fee -> [QuikNode Solana Pr
 To enable monitoring and running multiple instances of the Ore CLIs:
 
 ```
-$OreCliDirectory = "C:\\Path\\To\\OreCli"    # Change this to where you donwloaded your Ore CLI directory
+$OreCliDirectory = "C:\\Path\\To\\OreCli"    # Change this to your Ore CLI directory
 $KeyPairFile = "keypair.json"                # Your keypair file
 $PriorityFee = 500000                        # Set your priority fee - <MICROLAMPORTS>
 $RpcUrl = "https://your-rpc-url.com"         # Your custom RPC URL
-$NumInstances = 5                            # Number of instances you want to run (CHECK LOAD IN TASK MANAGER BEFORE INCREASING TO MUCH)
-
-$global:jobCounter = 0
+$NumInstances = 10                           # Number of instances you want to run
 $ScriptBlock = {
     param($OreCliDirectory, $KeyPairFile, $PriorityFee, $RpcUrl)
     cd $OreCliDirectory
-    $output = & .\target\release\ore --keypair $KeyPairFile --priority-fee $PriorityFee --rpc $RpcUrl mine 2>&1
-    if ($LASTEXITCODE -eq 0) {
-        Write-Output "Job Succeeded."
-    } else {
-        # Only grab the first line of the error message
-        $errorLine = $output -split "\r\n" | Select-Object -First 1
-        Write-Output "Job Failed. Error: $errorLine"
-    }
+    .\\target\\release\\ore --keypair $KeyPairFile --priority-fee $PriorityFee --rpc $RpcUrl mine
 }
-
 function Start-OreCliProcesses {
     param($numInstances)
     for ($i = 0; $i -lt $numInstances; $i++) {
-        $global:jobCounter += 1
         Start-Job -ScriptBlock $ScriptBlock -ArgumentList $OreCliDirectory, $KeyPairFile, $PriorityFee, $RpcUrl
-        Write-Host ("Starting job " + $global:jobCounter) -ForegroundColor Green
     }
 }
-
-# Main Loop
 while ($true) {
     $runningJobs = Get-Job | Where-Object { $_.State -eq 'Running' }
     $instancesToStart = $NumInstances - $runningJobs.Count
-    
     if ($instancesToStart -gt 0) {
         Start-OreCliProcesses -numInstances $instancesToStart
     }
-
-    $completedJobs = Get-Job | Where-Object { $_.State -eq 'Completed' }
-    foreach ($job in $completedJobs) {
-        $jobResult = Receive-Job -Job $job
-        if ($jobResult -match "Job Succeeded.") {
-            Write-Host ("Job " + [regex]::Match($job.Command, "\d+").Value + " succeeded.") -ForegroundColor Green
-        } elseif ($jobResult -match "Job Failed.") {
-            # Extract only the first line of the error message for display
-            $errorLine = $jobResult -replace "Job Failed. Error: ", ""
-            Write-Host ("Job " + [regex]::Match($job.Command, "\d+").Value + " failed with error: $errorLine") -ForegroundColor Red
-        }
-        Remove-Job -Job $job
-    }
-
-    $activeJobsCount = (Get-Job | Where-Object { $_.State -eq 'Running' }).Count
-    $host.UI.RawUI.WindowTitle = "Active Instances: $activeJobsCount"
-
+    Get-Job | Where-Object { $_.State -ne 'Running' } | Remove-Job
     Start-Sleep -Seconds 10
 }
 ```
