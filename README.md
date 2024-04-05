@@ -6,6 +6,8 @@ Feeling generous? Feel free to buy me a Redbull by sending some SOL to `2tmmSLiu
 
 ## Setup and Installation
 
+### Clone or download the ore-cli here -> [HardhatChad/ore-cli](https://github.com/HardhatChad/ore-cli)
+
 ### 1. Install Rust:
 
 - For native Windows development, install Rust via `rustup` by visiting the official [Rust installation page](https://www.rust-lang.org/tools/install).
@@ -20,7 +22,6 @@ cargo build --release
 ```
 
 ## Using the Ore CLI
-Get it here -> [HardhatChad/ore-cli](https://github.com/HardhatChad/ore-cli)
 
 Run the following command in Command Prompt, VS Terminal or PowerShell to start mining:
 
@@ -59,35 +60,63 @@ Live <MICROLAMPORTS> tracker i use to adjust priority-fee -> [QuikNode Solana Pr
 To enable monitoring and running multiple instances of the Ore CLIs:
 
 ```
-$OreCliDirectory = "C:\\Path\\To\\OreCli"    # Change this to your Ore CLI directory
+$OreCliDirectory = "C:\\Path\\To\\OreCli"    # Change this to where you donwloaded your Ore CLI directory
 $KeyPairFile = "keypair.json"                # Your keypair file
 $PriorityFee = 500000                        # Set your priority fee - <MICROLAMPORTS>
 $RpcUrl = "https://your-rpc-url.com"         # Your custom RPC URL
 $NumInstances = 5                           # Number of instances you want to run (CHECK LOAD IN TASK MANAGER BEFORE INCREASING TO MUCH)
 
+$global:sequenceNumber = 0
 $ScriptBlock = {
     param($OreCliDirectory, $KeyPairFile, $PriorityFee, $RpcUrl)
     cd $OreCliDirectory
-    .\\target\\release\\ore --keypair $KeyPairFile --priority-fee $PriorityFee --rpc $RpcUrl mine
+    $output = & .\target\release\ore --keypair $KeyPairFile --priority-fee $PriorityFee --rpc $RpcUrl mine 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        Write-Output "Job Succeeded."
+    } else {
+        # Only grab the first line of the error message
+        $errorLine = $output -split "\r\n" | Select-Object -First 1
+        Write-Output "Job Failed. Error: $errorLine"
+    }
 }
 
 function Start-OreCliProcesses {
     param($numInstances)
     for ($i = 0; $i -lt $numInstances; $i++) {
-        Start-Job -ScriptBlock $ScriptBlock -ArgumentList $OreCliDirectory, $KeyPairFile, $PriorityFee, $RpcUrl
+        $global:sequenceNumber += 1
+        $job = Start-Job -ScriptBlock $ScriptBlock -ArgumentList $OreCliDirectory, $KeyPairFile, $PriorityFee, $RpcUrl
+        Write-Host ("Starting job " + $global:sequenceNumber) -ForegroundColor Green
     }
 }
 
 while ($true) {
     $runningJobs = Get-Job | Where-Object { $_.State -eq 'Running' }
     $instancesToStart = $NumInstances - $runningJobs.Count
+    
     if ($instancesToStart -gt 0) {
         Start-OreCliProcesses -numInstances $instancesToStart
     }
-    Get-Job | Where-Object { $_.State -ne 'Running' } | Remove-Job
+
+    $completedJobs = Get-Job | Where-Object { $_.State -eq 'Completed' }
+    foreach ($job in $completedJobs) {
+        $jobResult = Receive-Job -Job $job
+        if ($jobResult -match "Job Succeeded.") {
+            Write-Host ("Job " + [regex]::Match($job.Command, "\d+").Value + " succeeded.") -ForegroundColor Green
+        } elseif ($jobResult -match "Job Failed.") {
+            $errorLine = $jobResult -replace "Job Failed. Error: ", ""
+            Write-Host ("Job " + [regex]::Match($job.Command, "\d+").Value + " failed with error: $errorLine") -ForegroundColor Red
+        }
+        Remove-Job -Job $job
+    }
+
+    $activeJobsCount = (Get-Job | Where-Object { $_.State -eq 'Running' }).Count
+    $host.UI.RawUI.WindowTitle = "Active Instances: $activeJobsCount"
+
     Start-Sleep -Seconds 10
 }
 ```
+
+
 
 Could possibly be made a lot better, whipped this up in like 10-15 mins for a solution before I went to bed.
 
