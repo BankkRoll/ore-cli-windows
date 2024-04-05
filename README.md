@@ -2,7 +2,7 @@
 
 If you've found this guide helpful, please consider ⭐starring⭐ it to show your support!
 
-Feeling generous? Feel free to buy me a Redbull by sending some SOL to `2tmmSLiuRUfcXj6feQxiGVkivAagQsFAhw4WyPv2cFPQ` all donations all greatly appreciated
+Feeling generous? Feel free to buy me a Redbull by sending some SOL to `EEXrrWy7JwwjF74FZ9rJGL7sYbsm6QdiyhH4ipwhxpYa` all donations all greatly appreciated
 
 ## Setup and Installation
 
@@ -95,7 +95,7 @@ Could possibly be made a lot better, whipped this up in like 10-15 mins for a so
 
 If you've found this guide helpful, please consider starring it to show your support!
 
-Feeling generous? Feel free to buy me a Redbull by sending some SOL to `2tmmSLiuRUfcXj6feQxiGVkivAagQsFAhw4WyPv2cFPQ` all donations all greatly appreciated
+Feeling generous? Feel free to buy me a Redbull by sending some SOL to `EEXrrWy7JwwjF74FZ9rJGL7sYbsm6QdiyhH4ipwhxpYa` all donations all greatly appreciated
 
 ### Terms and Conditions:
 
