@@ -59,23 +59,27 @@ Live <MICROLAMPORTS> tracker i use to adjust priority-fee -> [QuikNode Solana Pr
 
 To enable monitoring and running multiple instances of the Ore CLIs:
 
+#### Open multiple instances in the background, only open 1 window:
 ```
-$OreCliDirectory = "C:\\Path\\To\\OreCli"    # Change this to your Ore CLI directory
-$KeyPairFile = "keypair.json"                # Your keypair file
-$PriorityFee = 500000                        # Set your priority fee - <MICROLAMPORTS>
-$RpcUrl = "https://your-rpc-url.com"         # Your custom RPC URL
-$NumInstances = 10                           # Number of instances you want to run
+$OreCliDirectory = "C:\\Path\\To\\OreCli"     # Change this to your ore-cli directory
+$KeyPairFile = "keypair.json"                 # Your keypair file in the ore-cli directory
+$PriorityFee = 500000                         # Set your priority fee - <MICROLAMPORTS>
+$RpcUrl = "https://your-rpc-url.com"          # Your custom RPC URL
+$NumInstances = 10                            # Number of instances you want to run
+
 $ScriptBlock = {
     param($OreCliDirectory, $KeyPairFile, $PriorityFee, $RpcUrl)
     cd $OreCliDirectory
-    .\\target\\release\\ore --keypair $KeyPairFile --priority-fee $PriorityFee --rpc $RpcUrl mine
+    .\target\release\ore --keypair $KeyPairFile --priority-fee $PriorityFee --rpc $RpcUrl mine
 }
+
 function Start-OreCliProcesses {
     param($numInstances)
     for ($i = 0; $i -lt $numInstances; $i++) {
         Start-Job -ScriptBlock $ScriptBlock -ArgumentList $OreCliDirectory, $KeyPairFile, $PriorityFee, $RpcUrl
     }
 }
+
 while ($true) {
     $runningJobs = Get-Job | Where-Object { $_.State -eq 'Running' }
     $instancesToStart = $NumInstances - $runningJobs.Count
@@ -87,9 +91,41 @@ while ($true) {
 }
 ```
 
+#### Open multiple instances in multiple tabs, auto restarts, and see logging for all instances:
+```
+$OreCliDirectory = "C:\\Path\\To\\OreCli"     # Change this to your ore-cli directory
+$KeyPairFile = "keypair.json"                 # Your keypair file in the ore-cli directory
+$PriorityFee = 500000                         # Set your priority fee - <MICROLAMPORTS>
+$RpcUrl1 = "https://your-rpc-url.com"         # Your custom RPC URL #1 - multiple rpc for balancing load, use same for both if not
+$RpcUrl2 = "https://your-rpc-url.com"         # Your custom RPC URL #2 - multiple rpc for balancing load, use same for both if not
+$NumInstances = 10                            # Number of instances you want to run
+
+for ($i = 0; $i -lt $NumInstances; $i++) {
+    $RpcUrl = if ($i % 2 -eq 0) { $RpcUrl1 } else { $RpcUrl2 }
+    $scriptBlockContent = @"
+    while (`$true) {
+        try {
+            cd "$OreCliDirectory"
+            .\target\release\ore --keypair "$KeyPairFile" --priority-fee $PriorityFee --rpc "$RpcUrl" mine
+            Start-Sleep -Seconds 2  # pause to prevent immediate restart loop on fast failure
+        } catch {
+            Write-Error "An error occurred, restarting..."
+            Start-Sleep -Seconds 2  # Pause before restarting
+        }
+    }
+"@
+    $encodedCommand = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($scriptBlockContent))
+    Start-Process "powershell.exe" -ArgumentList "-NoExit", "-EncodedCommand", $encodedCommand
+    Start-Sleep -Seconds 5
+}
+```
+Get PowerToys and use FancyZones to setup a super clean evenly organized layout quickly and easily:
+
+- [Installing with Windows Package Manager](https://learn.microsoft.com/en-us/windows/powertoys/install#installing-with-windows-package-manager)
+- [Installing with Windows executable file via GitHub](https://learn.microsoft.com/en-us/windows/powertoys/install#installing-with-windows-executable-file-via-github)
+- [Installing with Microsoft Store](https://learn.microsoft.com/en-us/windows/powertoys/install#installing-with-microsoft-store)
 
 
-Could possibly be made a lot better, whipped this up in like 10-15 mins for a solution before I went to bed.
 
 ## Conclusion
 
