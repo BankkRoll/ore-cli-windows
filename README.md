@@ -4,6 +4,19 @@ If you've found this guide helpful, please consider ⭐starring⭐ it to show yo
 
 Feeling generous? Feel free to buy me a Redbull by sending some SOL to `EEXrrWy7JwwjF74FZ9rJGL7sYbsm6QdiyhH4ipwhxpYa` all donations all greatly appreciated
 
+# Table of Contents
+  - [Setup and Installation](#setup-and-installation)
+    - [Clone or Download](#clone-or-download-the-ore-cli-here---hardhatchadore-cli)
+    - [Install Rust](#1-install-rust)
+    - [Build the Ore CLI](#2-build-the-ore-cli)
+  - [Using the Ore CLI](#using-the-ore-cli)
+  - [Scripting with PowerShell](#scripting-with-powershell)
+    - [Open Multiple Instances in One Window](#open-multiple-instances-in-the-background-only-open-1-window)
+    - [Open Multiple Instances in Multiple Windows](#open-multiple-instances-in-multiple-tabs-auto-restarts-and-see-logging-for-all-instances)
+    - [Check All Balances](#check-all-balances)
+    - [Claim All Keypairs Mining](#claim-all-keypairs-mining)
+  - [Terms and Conditions](#terms-and-conditions)
+
 ## Setup and Installation
 
 ### Clone or download the ore-cli here -> [HardhatChad/ore-cli](https://github.com/HardhatChad/ore-cli)
@@ -55,6 +68,20 @@ Live <MICROLAMPORTS> tracker i use to adjust priority-fee -> [QuikNode Solana Pr
 - `-h, --help`: Print help information for the CLI or specific commands.
 - `-V, --version`: Print version information for the Ore CLI.
 
+ex.
+### `balance`
+```sh
+./target/release/ore --keypair /path/to/keypair.json balance <ACCOUNT-PUBLIC-KEY>
+```
+### `claim`
+```sh
+./target/release/ore --keypair /path/to/keypair.json claim
+```
+### `rewards`
+```sh
+./target/release/ore --keypair /path/to/keypair.json rewards
+```
+
 ## Scripting with PowerShell
 
 To enable monitoring and running multiple instances of the Ore CLIs just open powershell and paste the script you want to run!
@@ -93,16 +120,37 @@ while ($true) {
 ```
 
 #### Open multiple instances in multiple tabs, auto restarts, and see logging for all instances:
+
+Best to use multiple keypairs to get success rates, add/remove as many ad youd like same with rpcs
+
 ```
-$OreCliDirectory = "C:\\Path\\To\\OreCli"     # Change this to your ore-cli directory
-$KeyPairFile = "keypair.json"                 # Your keypair file in the ore-cli directory
-$PriorityFee = 500000                         # Set your priority fee - <MICROLAMPORTS>
-$RpcUrl1 = "https://your-rpc-url.com"         # Your custom RPC URL #1 - multiple rpc for balancing load, use same for both if not
-$RpcUrl2 = "https://your-rpc-url.com"         # Your custom RPC URL #2 - multiple rpc for balancing load, use same for both if not
-$NumInstances = 10                            # Number of instances you want to run
+$OreCliDirectory = "C:\\Path\\To\\OreCli"
+$KeyPairFiles = @(
+    "keypair1.json", 
+    "keypair2.json", 
+    "keypair3.json", 
+    "keypair4.json", 
+    "keypair5.json", 
+    "keypair6.json", 
+    "keypair7.json", 
+    "keypair8.json", 
+    "keypair9.json", 
+    "keypair10.json"
+    )
+$PriorityFee = 1000000
+$RpcUrls = @(
+    "https://your-rpc-url.com",
+    "https://your-rpc-url.com",
+    "https://your-rpc-url.com",
+    "https://your-rpc-url.com",
+    "https://your-rpc-url.com",
+)
+$NumInstances = 25
 
 for ($i = 0; $i -lt $NumInstances; $i++) {
-    $RpcUrl = if ($i % 2 -eq 0) { $RpcUrl1 } else { $RpcUrl2 }
+    $RpcUrl = $RpcUrls[$i % $RpcUrls.Length]
+    $KeyPairFile = $KeyPairFiles[$i % $KeyPairFiles.Length]
+
     $scriptBlockContent = @"
     while (`$true) {
         try {
@@ -117,7 +165,7 @@ for ($i = 0; $i -lt $NumInstances; $i++) {
 "@
     $encodedCommand = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($scriptBlockContent))
     Start-Process "powershell.exe" -ArgumentList "-NoExit", "-EncodedCommand", $encodedCommand
-    Start-Sleep -Seconds 5
+    Start-Sleep -Seconds 10
 }
 ```
 Get PowerToys and use FancyZones to setup a super clean evenly organized layout quickly and easily:
@@ -126,7 +174,82 @@ Get PowerToys and use FancyZones to setup a super clean evenly organized layout 
 - [Installing with Windows executable file via GitHub](https://learn.microsoft.com/en-us/windows/powertoys/install#installing-with-windows-executable-file-via-github)
 - [Installing with Microsoft Store](https://learn.microsoft.com/en-us/windows/powertoys/install#installing-with-microsoft-store)
 
+#### Check all balances:
 
+Just add all your public keys and this will show all balances (NOT CLAIMABLE, THIS IS BALANCE MEANING ALREADY CLAIMED!
+
+```
+$OreCliDirectory = "C:\\Path\\To\\OreCli"
+$KeyPairFile = "keypair1.json"
+$PriorityFee = 1000000
+$RpcUrl = "https://your-rpc-url.com"
+$PublicKeys = @(
+    "<pulbickeyshere>",
+    "<pulbickeyshere>",
+    "<pulbickeyshere>",
+    "<pulbickeyshere>",
+    "<pulbickeyshere>",
+    "<pulbickeyshere>",
+)
+
+$scriptBlockContent = $PublicKeys | ForEach-Object {
+    $PublicKey = $_
+    @"
+    try {
+        cd "$OreCliDirectory"
+        .\target\release\ore --keypair "$KeyPairFile" --priority-fee $PriorityFee --rpc "$RpcUrl" rewards "$PublicKey"
+    } catch {
+        Write-Error "An error occurred while processing public key $PublicKey."
+    }
+"@
+}
+
+$encodedCommand = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($scriptBlockContent -join "`n"))
+Start-Process "powershell.exe" -ArgumentList "-NoExit", "-EncodedCommand $encodedCommand"
+```
+
+#### Claim all keypairs mining:
+
+Opens multiple shells to start the claiming of all your keypairs.
+```
+$OreCliDirectory = "C:\\Path\\To\\OreCli"
+$KeyPairFiles = @(
+    "keypair1.json", 
+    "keypair2.json", 
+    "keypair3.json", 
+    "keypair4.json", 
+    "keypair5.json", 
+    "keypair6.json", 
+    "keypair7.json", 
+    "keypair8.json", 
+    "keypair9.json", 
+    "keypair10.json"
+    )
+$PriorityFee = 1000000
+$RpcUrls = @(
+    "https://your-rpc-url.com",
+    "https://your-rpc-url.com",
+    "https://your-rpc-url.com",
+    "https://your-rpc-url.com",
+    "https://your-rpc-url.com",
+)
+
+foreach ($KeyPairFile in $KeyPairFiles) {
+    foreach ($RpcUrl in $RpcUrls) {
+        $scriptBlockContent = @"
+        try {
+            cd "$OreCliDirectory"
+            .\target\release\ore --keypair "$KeyPairFile" --priority-fee $PriorityFee --rpc "$RpcUrl" claim
+        } catch {
+            Write-Error "An error occurred during the claim operation."
+        }
+"@
+        $encodedCommand = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($scriptBlockContent))
+        Start-Process "powershell.exe" -ArgumentList "-NoExit", "-EncodedCommand", $encodedCommand
+        Start-Sleep -Seconds 2  # Short pause between starting each instance
+    }
+}
+```
 
 ## Conclusion
 
