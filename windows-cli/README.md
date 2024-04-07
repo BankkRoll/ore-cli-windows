@@ -1,4 +1,4 @@
-# Windows ali to easily run multiple instances
+# Windows cli to easily run multiple instances
 
 This guide assumes you have the ore-cli and this directory in the same folder.
 
