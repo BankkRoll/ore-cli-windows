@@ -57,7 +57,8 @@ Live <MICROLAMPORTS> tracker i use to adjust priority-fee -> [QuikNode Solana Pr
 
 ## Scripting with PowerShell
 
-To enable monitoring and running multiple instances of the Ore CLIs:
+To enable monitoring and running multiple instances of the Ore CLIs just open powershell and paste the script you want to run!
+- Suggested to open notepad, copy and paste the script you want and save it. To run it just right click and `Run With Powershell`.
 
 #### Open multiple instances in the background, only open 1 window:
 ```
