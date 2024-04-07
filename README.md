@@ -174,9 +174,9 @@ Get PowerToys and use FancyZones to setup a super clean evenly organized layout 
 - [Installing with Windows executable file via GitHub](https://learn.microsoft.com/en-us/windows/powertoys/install#installing-with-windows-executable-file-via-github)
 - [Installing with Microsoft Store](https://learn.microsoft.com/en-us/windows/powertoys/install#installing-with-microsoft-store)
 
-#### Check all balances:
+#### Check all rewards:
 
-Just add all your public keys and this will show all balances (NOT CLAIMABLE, THIS IS BALANCE MEANING ALREADY CLAIMED!
+Just add all your public keys and this will show all rewards ready to be claimed
 
 ```
 $OreCliDirectory = "C:\\Path\\To\\OreCli"
@@ -210,7 +210,7 @@ Start-Process "powershell.exe" -ArgumentList "-NoExit", "-EncodedCommand $encode
 
 #### Claim all keypairs mining:
 
-Opens multiple shells to start the claiming of all your keypairs.
+Opens multiple shells to start the claiming of all your rewards.
 ```
 $OreCliDirectory = "C:\\Path\\To\\OreCli"
 $KeyPairFiles = @(
