@@ -6,16 +6,25 @@ $PublicKeys = @(
     # Add more public keys here
 )
 
-$scriptBlockContent = $PublicKeys | ForEach-Object {
-    $PublicKey = $_
-    @"
-    try {
-        .\target\release\ore --keypair "$KeyPairFile" --priority-fee $PriorityFee --rpc "$RpcUrl" rewards "$PublicKey"
-    } catch {
-        Write-Error "An error occurred while processing public key $PublicKey."
-    }
-"@
-}
+while ($true) {
+    Clear-Host
+    $date = Get-Date
+    Write-Host "`n$date - Monitoring ORE Rewards" -ForegroundColor Cyan
+    Write-Host "PK     | Rewards" -ForegroundColor Yellow
+    Write-Host "------------------------------------------------" -ForegroundColor DarkGray
 
-$encodedCommand = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($scriptBlockContent -join "`n"))
-Start-Process "powershell.exe" -ArgumentList "-NoExit", "-EncodedCommand $encodedCommand"
+    $PublicKeys | ForEach-Object {
+        $PublicKey = $_
+        $pkShort = $PublicKey.Substring(0,3) + ".." + $PublicKey.Substring($PublicKey.Length - 3,3)
+        try {
+            $output = & "$OreCliDirectory\target\release\ore" --keypair "$KeyPairFile" --priority-fee $PriorityFee --rpc "$RpcUrl" rewards "$PublicKey"
+            Write-Host "$pkShort | " -NoNewline -ForegroundColor Green
+            Write-Host $output -ForegroundColor Yellow
+        } catch {
+            Write-Host "$pkShort | Error occurred" -ForegroundColor Red
+        }
+    }
+
+    Write-Host "------------------------------------------------" -ForegroundColor DarkGray
+    Start-Sleep -Seconds 600
+}
