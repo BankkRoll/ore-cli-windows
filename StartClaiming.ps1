@@ -9,16 +9,17 @@ $RpcUrls = @(
 )
 
 foreach ($KeyPairFile in $KeyPairFiles) {
-    foreach ($RpcUrl in $RpcUrls) {
-        $scriptBlockContent = @"
-        try {
-            .\target\release\ore --keypair "$KeyPairFile" --priority-fee $PriorityFee --rpc "$RpcUrl" claim
-        } catch {
-            Write-Error "An error occurred during the claim operation."
-        }
-"@
-        $encodedCommand = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($scriptBlockContent))
-        Start-Process "powershell.exe" -ArgumentList "-NoExit", "-EncodedCommand", $encodedCommand
-        Start-Sleep -Seconds 2
+    $RpcUrl = $RpcUrls | Get-Random
+
+    $scriptBlockContent = @"
+    try {
+        cd "$OreCliDirectory"
+        .\target\release\ore --keypair "$KeyPairFile" --priority-fee $PriorityFee --rpc "$RpcUrl" claim
+    } catch {
+        Write-Error "An error occurred during the claim operation."
     }
+"@
+    $encodedCommand = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($scriptBlockContent))
+    Start-Process "powershell.exe" -ArgumentList "-NoExit", "-EncodedCommand", $encodedCommand
+    Start-Sleep -Seconds 2
 }
