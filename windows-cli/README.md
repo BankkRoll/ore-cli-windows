@@ -37,9 +37,9 @@ npm install
 ## Scripting with PowerShell
 
 Make sure to edit the top configs of the script you want to run:
-- [StartMining.ps1](../StartCheckRewards.ps1) - Instances will auto rotate between as many/little keypairs and rpcs are put.
+- [StartMining.ps1](../StartMining.ps11) - Instances will auto rotate between as many/little keypairs and rpcs are put.
 - [StartCheckRewards.ps1](../StartCheckRewards.ps1) - Check all claimable rewards
-- [StartClaiming.ps1](../StartCheckRewards.ps1) - Claim all claimable rewards
+- [StartClaiming.ps1](../StartClaiming.ps1) - Claim all claimable rewards
 
 
 ## Usage
@@ -68,9 +68,9 @@ npm run ore-cli
 An interactive menu will trigger, select the desired operation from the interactive menu. Ensure you have the necessary PowerShell scripts (`StartCheckRewards.ps1`, `StartMining.ps1`, `StartClaiming.ps1`)  and configured them with your info:
 
 
-- [StartMining.ps1](../StartCheckRewards.ps1) - Instances will auto rotate between as many/little keypairs and rpcs are put.
+- [StartMining.ps1](../StartMining.ps11) - Instances will auto rotate between as many/little keypairs and rpcs are put.
 - [StartCheckRewards.ps1](../StartCheckRewards.ps1) - Check all claimable rewards
-- [StartClaiming.ps1](../StartCheckRewards.ps1) - Claim all claimable rewards
+- [StartClaiming.ps1](../StartClaiming.ps1) - Claim all claimable rewards
 
 
 #### Organize Your Layout
