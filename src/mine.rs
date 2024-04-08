@@ -207,8 +207,7 @@ impl Miner {
     }
 
     pub async fn get_ore_display_balance(&self) -> String {
-        let client =
-            RpcClient::new_with_commitment(self.cluster.clone(), CommitmentConfig::confirmed());
+        let client = RpcClient::new_with_commitment(self.cluster.clone(), CommitmentConfig::confirmed());
         let signer = self.signer();
         let token_account_address = spl_associated_token_account::get_associated_token_address(
             &signer.pubkey(),
@@ -222,7 +221,7 @@ impl Miner {
                     "0.00".to_string()
                 }
             }
-            Err(_) => "Err".to_string(),
+            Err(_) => "0".to_string(),
         }
     }
 }

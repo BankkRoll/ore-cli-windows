@@ -7,7 +7,7 @@ $RpcUrls = @(
     "https://your-rpc-url.com",
     # Add more RPC URLs here
 )
-$NumInstances = 10
+$NumInstances = 10 # 1 instance per keypair for best results
 
 for ($i = 0; $i -lt $NumInstances; $i++) {
     $RpcUrl = $RpcUrls[$i % $RpcUrls.Length]

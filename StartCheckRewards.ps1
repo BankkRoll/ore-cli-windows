@@ -1,5 +1,4 @@
 $KeyPairFile = "keypair1.json"
-$PriorityFee = 1000000
 $RpcUrl = "https://your-rpc-url.com"
 $PublicKeys = @(
     "123456789987654321123456789987654321654987",
@@ -17,7 +16,7 @@ while ($true) {
         $PublicKey = $_
         $pkShort = $PublicKey.Substring(0,3) + ".." + $PublicKey.Substring($PublicKey.Length - 3,3)
         try {
-            $output = & "$OreCliDirectory\target\release\ore" --keypair "$KeyPairFile" --priority-fee $PriorityFee --rpc "$RpcUrl" rewards "$PublicKey"
+            $output = & ".\target\release\ore" --keypair "$KeyPairFile" --rpc "$RpcUrl" rewards "$PublicKey"
             Write-Host "$pkShort | " -NoNewline -ForegroundColor Green
             Write-Host $output -ForegroundColor Yellow
         } catch {
