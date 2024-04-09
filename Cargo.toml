@@ -1,6 +1,6 @@
 [package]
 name = "ore-cli"
-version = "0.4.10"
+version = "0.4.11"
 description = "A command line interface for the Ore program."
 license = "Apache-2.0"
 edition = "2021"
@@ -21,7 +21,7 @@ chrono = "0.4.34"
 clap = { version = "4.4.12", features = ["derive"] }
 futures = "0.3.30"
 log = "0.4"
-ore = { version = "1.2.0", package = "ore-program" }
+ore = { version = "1.2.1", package = "ore-program" }
 rand = "0.8.4"
 solana-cli-config = "1.18.5"
 solana-client = "^1.16"
