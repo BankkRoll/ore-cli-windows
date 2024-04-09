@@ -18,12 +18,16 @@ mod utils;
 use std::sync::Arc;
 
 use clap::{command, Parser, Subcommand};
-use solana_sdk::signature::{read_keypair_file, Keypair};
+use solana_client::nonblocking::rpc_client::RpcClient;
+use solana_sdk::{
+    commitment_config::CommitmentConfig,
+    signature::{read_keypair_file, Keypair},
+};
 
 struct Miner {
     pub keypair_filepath: Option<String>,
     pub priority_fee: u64,
-    pub cluster: String,
+    pub rpc_client: Arc<RpcClient>,
 }
 
 #[derive(Parser, Debug)]
@@ -188,9 +192,10 @@ async fn main() {
     // Initialize miner.
     let cluster = args.rpc.unwrap_or(cli_config.json_rpc_url);
     let default_keypair = args.keypair.unwrap_or(cli_config.keypair_path);
+    let rpc_client = RpcClient::new_with_commitment(cluster, CommitmentConfig::finalized());
 
     let miner = Arc::new(Miner::new(
-        cluster.clone(),
+        Arc::new(rpc_client),
         args.priority_fee,
         Some(default_keypair),
     ));
@@ -213,7 +218,7 @@ async fn main() {
             miner.mine(args.threads).await;
         }
         Commands::Claim(args) => {
-            miner.claim(cluster, args.beneficiary, args.amount).await;
+            miner.claim(args.beneficiary, args.amount).await;
         }
         #[cfg(feature = "admin")]
         Commands::Initialize(_) => {
@@ -231,11 +236,11 @@ async fn main() {
 }
 
 impl Miner {
-    pub fn new(cluster: String, priority_fee: u64, keypair_filepath: Option<String>) -> Self {
+    pub fn new(rpc_client: Arc<RpcClient>, priority_fee: u64, keypair_filepath: Option<String>) -> Self {
         Self {
+            rpc_client,
             keypair_filepath,
             priority_fee,
-            cluster,
         }
     }
 

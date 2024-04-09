@@ -5,12 +5,11 @@ use std::{
 
 use solana_client::{
     client_error::{ClientError, ClientErrorKind, Result as ClientResult},
-    nonblocking::rpc_client::RpcClient,
     rpc_config::{RpcSendTransactionConfig, RpcSimulateTransactionConfig},
 };
 use solana_program::instruction::Instruction;
 use solana_sdk::{
-    commitment_config::{CommitmentConfig, CommitmentLevel},
+    commitment_config::CommitmentLevel,
     compute_budget::ComputeBudgetInstruction,
     signature::{Signature, Signer},
     transaction::Transaction,
@@ -36,15 +35,11 @@ impl Miner {
     ) -> ClientResult<Signature> {
         let mut stdout = stdout();
         let signer = self.signer();
-        let client =
-            RpcClient::new_with_commitment(self.cluster.clone(), CommitmentConfig::confirmed());
+        let client = self.rpc_client.clone();
 
         // Return error if balance is zero
-        let balance = client
-            .get_balance_with_commitment(&signer.pubkey(), CommitmentConfig::confirmed())
-            .await
-            .unwrap();
-        if balance.value <= 0 {
+        let balance = client.get_balance(&signer.pubkey()).await.unwrap();
+        if balance <= 0 {
             return Err(ClientError {
                 request: None,
                 kind: ClientErrorKind::Custom("Insufficient SOL balance".into()),
@@ -53,12 +48,12 @@ impl Miner {
 
         // Build tx
         let (mut hash, mut slot) = client
-            .get_latest_blockhash_with_commitment(CommitmentConfig::confirmed())
+            .get_latest_blockhash_with_commitment(self.rpc_client.commitment())
             .await
             .unwrap();
         let mut send_cfg = RpcSendTransactionConfig {
             skip_preflight: true,
-            preflight_commitment: Some(CommitmentLevel::Confirmed),
+            preflight_commitment: Some(CommitmentLevel::Finalized),
             encoding: Some(UiTransactionEncoding::Base64),
             max_retries: Some(RPC_RETRIES),
             min_context_slot: Some(slot),
@@ -75,7 +70,7 @@ impl Miner {
                         RpcSimulateTransactionConfig {
                             sig_verify: false,
                             replace_recent_blockhash: true,
-                            commitment: Some(CommitmentConfig::confirmed()),
+                            commitment: Some(self.rpc_client.commitment()),
                             encoding: Some(UiTransactionEncoding::Base64),
                             accounts: None,
                             min_context_slot: None,
@@ -183,12 +178,12 @@ impl Miner {
             // Retry
             std::thread::sleep(Duration::from_millis(GATEWAY_DELAY));
             (hash, slot) = client
-                .get_latest_blockhash_with_commitment(CommitmentConfig::confirmed())
+                .get_latest_blockhash_with_commitment(self.rpc_client.commitment())
                 .await
                 .unwrap();
             send_cfg = RpcSendTransactionConfig {
                 skip_preflight: true,
-                preflight_commitment: Some(CommitmentLevel::Confirmed),
+                preflight_commitment: Some(CommitmentLevel::Finalized),
                 encoding: Some(UiTransactionEncoding::Base64),
                 max_retries: Some(RPC_RETRIES),
                 min_context_slot: Some(slot),

@@ -5,9 +5,8 @@ use std::{
 
 use ore::{self, state::Bus, BUS_ADDRESSES, BUS_COUNT, EPOCH_DURATION};
 use rand::Rng;
-use solana_client::nonblocking::rpc_client::RpcClient;
+use solana_program::{keccak::HASH_BYTES, program_memory::sol_memcmp, pubkey::Pubkey};
 use solana_sdk::{
-    commitment_config::CommitmentConfig,
     compute_budget::ComputeBudgetInstruction,
     keccak::{hashv, Hash as KeccakHash},
     signature::Signer,
@@ -34,8 +33,8 @@ impl Miner {
         loop {
             // Fetch account state
             let balance = self.get_ore_display_balance().await;
-            let treasury = get_treasury(self.cluster.clone()).await;
-            let proof = get_proof(self.cluster.clone(), signer.pubkey()).await;
+            let treasury = get_treasury(&self.rpc_client).await;
+            let proof = get_proof(&self.rpc_client, signer.pubkey()).await;
             let rewards =
                 (proof.claimable_rewards as f64) / (10f64.powf(ore::TOKEN_DECIMALS as f64));
             let reward_rate =
@@ -55,15 +54,21 @@ impl Miner {
             println!("\n\nSubmitting hash for validation...");
             'submit: loop {
                 // Double check we're submitting for the right challenge
-                let proof_ = get_proof(self.cluster.clone(), signer.pubkey()).await;
-                if proof_.hash.ne(&proof.hash) {
+                let proof_ = get_proof(&self.rpc_client, signer.pubkey()).await;
+                if !self.validate_hash(
+                    next_hash,
+                    proof_.hash.into(),
+                    signer.pubkey(),
+                    nonce,
+                    treasury.difficulty.into(),
+                ) {
                     println!("Hash already validated! An earlier transaction must have landed.");
                     break 'submit;
                 }
 
                 // Reset epoch, if needed
-                let treasury = get_treasury(self.cluster.clone()).await;
-                let clock = get_clock_account(self.cluster.clone()).await;
+                let treasury = get_treasury(&self.rpc_client).await;
+                let clock = get_clock_account(&self.rpc_client).await;
                 let threshold = treasury.last_reset_at.saturating_add(EPOCH_DURATION);
                 if clock.unix_timestamp.ge(&threshold) {
                     // There are a lot of miners right now, so randomly select into submitting tx
@@ -114,7 +119,7 @@ impl Miner {
         loop {
             let bus_id = rng.gen_range(0..BUS_COUNT);
             if let Ok(bus) = self.get_bus(bus_id).await {
-                if bus.rewards.gt(&reward_rate.saturating_mul(4)) {
+                if bus.rewards.gt(&reward_rate.saturating_mul(20)) {
                     return bus;
                 }
             }
@@ -206,8 +211,34 @@ impl Miner {
         *r_solution
     }
 
+    pub fn validate_hash(
+        &self,
+        hash: KeccakHash,
+        current_hash: KeccakHash,
+        signer: Pubkey,
+        nonce: u64,
+        difficulty: KeccakHash,
+    ) -> bool {
+        // Validate hash correctness
+        let hash_ = hashv(&[
+            current_hash.as_ref(),
+            signer.as_ref(),
+            nonce.to_le_bytes().as_slice(),
+        ]);
+        if sol_memcmp(hash.as_ref(), hash_.as_ref(), HASH_BYTES) != 0 {
+            return false;
+        }
+
+        // Validate hash difficulty
+        if hash.gt(&difficulty) {
+            return false;
+        }
+
+        true
+    }
+
     pub async fn get_ore_display_balance(&self) -> String {
-        let client = RpcClient::new_with_commitment(self.cluster.clone(), CommitmentConfig::confirmed());
+        let client = self.rpc_client.clone();
         let signer = self.signer();
         let token_account_address = spl_associated_token_account::get_associated_token_address(
             &signer.pubkey(),
@@ -221,7 +252,7 @@ impl Miner {
                     "0.00".to_string()
                 }
             }
-            Err(_) => "0".to_string(),
+            Err(_) => "0.00".to_string(),
         }
     }
 }

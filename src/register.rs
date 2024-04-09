@@ -1,5 +1,4 @@
-use solana_client::nonblocking::rpc_client::RpcClient;
-use solana_sdk::{commitment_config::CommitmentConfig, signature::Signer};
+use solana_sdk::signature::Signer;
 
 use crate::{utils::proof_pubkey, Miner};
 
@@ -8,8 +7,7 @@ impl Miner {
         // Return early if miner is already registered
         let signer = self.signer();
         let proof_address = proof_pubkey(signer.pubkey());
-        let client =
-            RpcClient::new_with_commitment(self.cluster.clone(), CommitmentConfig::confirmed());
+        let client = self.rpc_client.clone();
         if client.get_account(&proof_address).await.is_ok() {
             return;
         }

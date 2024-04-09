@@ -17,7 +17,7 @@ impl Miner {
         let ix = ore::instruction::update_difficulty(signer.pubkey(), new_difficulty.into());
         // let bs58data = bs58::encode(ix.data).into_string();
         // println!("Data: {:?}", bs58data);
-        self.send_and_confirm(&[ix], false)
+        self.send_and_confirm(&[ix], false, false)
             .await
             .expect("Transaction failed");
     }

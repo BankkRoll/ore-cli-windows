@@ -1,20 +1,19 @@
 use std::str::FromStr;
 
 use ore::{self, state::Proof, utils::AccountDeserialize};
-use solana_client::nonblocking::rpc_client::RpcClient;
 use solana_program::pubkey::Pubkey;
 use solana_sdk::{
-    commitment_config::CommitmentConfig, compute_budget::ComputeBudgetInstruction,
+    compute_budget::ComputeBudgetInstruction,
     signature::Signer,
 };
 
 use crate::{cu_limits::CU_LIMIT_CLAIM, utils::proof_pubkey, Miner};
 
 impl Miner {
-    pub async fn claim(&self, cluster: String, beneficiary: Option<String>, amount: Option<f64>) {
+    pub async fn claim(&self, beneficiary: Option<String>, amount: Option<f64>) {
         let signer = self.signer();
         let pubkey = signer.pubkey();
-        let client = RpcClient::new_with_commitment(cluster, CommitmentConfig::confirmed());
+        let client = self.rpc_client.clone();
         let beneficiary = match beneficiary {
             Some(beneficiary) => {
                 Pubkey::from_str(&beneficiary).expect("Failed to parse beneficiary address")
@@ -57,8 +56,7 @@ impl Miner {
     async fn initialize_ata(&self) -> Pubkey {
         // Initialize client.
         let signer = self.signer();
-        let client =
-            RpcClient::new_with_commitment(self.cluster.clone(), CommitmentConfig::confirmed());
+        let client = self.rpc_client.clone();
 
         // Build instructions.
         let token_account_pubkey = spl_associated_token_account::get_associated_token_address(

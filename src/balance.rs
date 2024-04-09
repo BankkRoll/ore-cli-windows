@@ -1,8 +1,7 @@
 use std::str::FromStr;
 
-use solana_client::nonblocking::rpc_client::RpcClient;
 use solana_program::pubkey::Pubkey;
-use solana_sdk::{commitment_config::CommitmentConfig, signature::Signer};
+use solana_sdk::signature::Signer;
 
 use crate::Miner;
 
@@ -19,8 +18,7 @@ impl Miner {
         } else {
             signer.pubkey()
         };
-        let client =
-            RpcClient::new_with_commitment(self.cluster.clone(), CommitmentConfig::confirmed());
+        let client = self.rpc_client.clone();
         let token_account_address = spl_associated_token_account::get_associated_token_address(
             &address,
             &ore::MINT_ADDRESS,
