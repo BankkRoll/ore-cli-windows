@@ -13,7 +13,6 @@ foreach ($KeyPairFile in $KeyPairFiles) {
 
     $scriptBlockContent = @"
     try {
-        cd "$OreCliDirectory"
         .\target\release\ore --keypair "$KeyPairFile" --priority-fee $PriorityFee --rpc "$RpcUrl" claim
     } catch {
         Write-Error "An error occurred during the claim operation."
