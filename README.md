@@ -40,6 +40,8 @@ cargo build --release
 This will build the project into a target folder we will work with.
 
 ### 3. Create keypair file(s):
+> [!CAUTION]
+> DO NOT SHOW OR COMMIT THESE ANYWHERE!!!! KEEP THEM LOCAL
 
 You will need atleast 1 keypair or multiple if [scripting with powershell](#scripting-with-powershell).
 
