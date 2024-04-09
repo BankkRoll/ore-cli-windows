@@ -1,18 +1,21 @@
-$KeyPairFiles = @(
-    "keypair1.json", 
-    # Add more keypair files here
+$OreCliDirectory = "C:\your\path\to\ore-cli" # path to your ore-cli directory (ex. C:\your\path\to\ore-cli-windows)
+$PriorityFee = 1000000                       # priority fee in <MICROLAMPORTS>
+$KeyPairFiles = @(                           # all keypair files to claim
+    "./keypairs/keypair1.json", 
+    "./keypairs/keypair2.json"
     )
-$PriorityFee = 1000000
-$RpcUrls = @(
-    "https://your-rpc-url.com",
-    # Add more RPC URLs here
+$RpcUrls = @(                                # all rpc urls to cycle through
+    "your-rpc-urls-here",
+    "your-rpc-urls-here"
 )
 
+# Opens a new PowerShell instance for each keypair file
 foreach ($KeyPairFile in $KeyPairFiles) {
     $RpcUrl = $RpcUrls | Get-Random
 
     $scriptBlockContent = @"
     try {
+        cd "$OreCliDirectory"
         .\target\release\ore --keypair "$KeyPairFile" --priority-fee $PriorityFee --rpc "$RpcUrl" claim
     } catch {
         Write-Error "An error occurred during the claim operation."

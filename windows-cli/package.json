@@ -6,7 +6,7 @@
   "main": "src/solana-cli.js",
   "scripts": {
     "solana-cli": "node src/solana-cli.js",
-    "ore-cli": "node src/ore-helper-cli.js"
+    "ore-cli": "node src/ore-cli.js"
   },
   "author": "bankkroll",
   "license": "MIT",
