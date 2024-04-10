@@ -22,8 +22,6 @@ ore-cli/
   - [Usage](#usage)
     - [solana-cli](#solana-cli)
     - [ore-cli](#ore-cli)
-    - [Using The Custom Windows Cli](#using-the-custom-windows-cli)
-  - [Conclusion](#conclusion)
   - [Terms and Conditions](#terms-and-conditions)
 
 ## Setup and Installation
@@ -41,6 +39,7 @@ Make sure to edit the top configs of the script you want to run:
 - [StartCheckRewards.ps1](../StartCheckRewards.ps1) - Check all claimable rewards
 - [StartClaiming.ps1](../StartClaiming.ps1) - Claim all claimable rewards
 
+---
 
 ## Usage
 
@@ -50,20 +49,31 @@ To you use the custom `ore-cli` or `solana-cli` open your terminal and navigate 
 cd windows-cli
 ```
 
-### `solana-cli`
+---
 
-To use the `solana-cli` for managing Solana keypairs and wallets, run:
+### Solana CLI
+
+For managing Solana keypairs and wallets with the `solana-cli`, initiate it using:
 ```bash
 npm run solana-cli
 ```
+#### Options:
+- **Generate a new Keypair**: Generate a new cryptographic keypair with `@solana/web3.js`
+- **Convert a Private Key to Keypair**: Transform an existing exported private key into a Keypair with `@solana/web3.js`
+> [!CAUTION]
+> DO NOT SHOW OR COMMIT THESE ANYWHERE!!!! KEEP THEM LOCAL
+---
 
-### `ore-cli`
+### ORE CLI
 
-For running the PowerShell scripts make sure you have configured your info, then just execute:
-
+Ensure your configuration details are set before running the PowerShell scripts with `ore-cli`. Execute with:
 ```bash
 npm run ore-cli
 ```
+#### Choices:
+- **StartCheckRewards**: Start rewards monitor
+- **StartMining**: Start mining instances
+- **StartClaiming**: Start claiming instances
 
 An interactive menu will trigger, select the desired operation from the interactive menu. Ensure you have the necessary PowerShell scripts (`StartCheckRewards.ps1`, `StartMining.ps1`, `StartClaiming.ps1`)  and configured them with your info:
 
@@ -72,6 +82,7 @@ An interactive menu will trigger, select the desired operation from the interact
 - [StartCheckRewards.ps1](../StartCheckRewards.ps1) - Check all claimable rewards
 - [StartClaiming.ps1](../StartClaiming.ps1) - Claim all claimable rewards
 
+---
 
 #### Organize Your Layout
 
